@@ -269,18 +269,23 @@ int conditional(int x, int y, int z) {
 int isLessOrEqual(int x, int y) {
 /*
 ** x   y   rst
-** +   +   x - y
-** +   -   flase 
-** -   +   true
-** -   -   x - y overflow...
+** +   +   !(x - y)
+** +   -   sign of y
+** -   +   sign of y
+** -   -   !(x - y)
+** Overflow does not occur because x and y have the same sign when calculating their difference
+** if x == y then 1
+**
+** binarized_diff_msb: -1 if msb is different else 0
+** positivity_y: 1 if y >= 0 else 0
+** positivity_gap: 1 if x-y >= 0 else 0
+** (binarized_diff_msb ? positivity_y : !positivity_gap) or x == y
 */
   const int diff_msb  = (x >> 31) ^ (y >> 31);
   const int binarized_diff_msb = ~(!! diff_msb) + 1;
-  const int positivity_y = !(x >> 31);
-  const int positivity_gap = !!(x + (~y + 1));
-  printf("%d %d %d\n", x, y, binarized_diff_msb);
-  
-  return (binarized_diff_msb & positivity_y) | (binarized_diff_msb & positivity_gap);
+  const int positivity_y = !(y >> 31);
+  const int positivity_gap = !((x + ~y + 1) >> 31);
+  return ((binarized_diff_msb & positivity_y) | (~binarized_diff_msb & !positivity_gap) | !(x ^ y));
 }
 //4
 /* 
@@ -292,7 +297,15 @@ int isLessOrEqual(int x, int y) {
  *   Rating: 4 
  */
 int logicalNeg(int x) {
-  return 2;
+/*
+** 0 and -0 is same
+** a and -a is different (a != 0)
+** a >> 31, -a >> 31 : 둘중 하나는 모든 비트가 1, 나머지는 모든 비트가 0
+*/
+  const int negative_x = (~x + 1);
+  const int shifed_x = x >> 31;
+  const int shifed_negative_x = negative_x >> 31;
+  return (shifed_x | shifed_negative_x) + 1;
 }
 /* howManyBits - return the minimum number of bits required to represent x in
  *             two's complement
