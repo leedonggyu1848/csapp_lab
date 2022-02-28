@@ -196,12 +196,15 @@ int isTmax(int x) {
  */
 int allOddBits(int x) {
 /*
-** complete_odd_bits: all add-numbered bits in word set to 1 and even-numbered bits in word set to 0
-** x & complete_odd_bits => if x is allOddBits then (x & complete_odd_bits) is complete_odd_bits
+** complete_odd_nbit: all add-numbered bits in n-bits to 1 and even-numbered bits in n-bits set to 0
+** x & complete_odd_32bit => if x is allOddBits then (x & complete_odd_32bit) is complete_odd_32bit
 ** !(a ^ b) is a == b
 */
-  const int complete_odd_bits = 0xAAAAAAAA;
-  return !((x & complete_odd_bits) ^ complete_odd_bits);
+  const int complete_odd_8bit = 0xAA;
+  const int complete_odd_16bit = complete_odd_8bit | (complete_odd_8bit << 8);
+  const int complete_odd_32bit = complete_odd_16bit | (complete_odd_16bit << 16);
+
+  return !((x & complete_odd_32bit) ^ complete_odd_32bit);
 }
 /* 
  * negate - return -x 
@@ -227,10 +230,18 @@ int negate(int x) {
  *   Rating: 3
  */
 int isAsciiDigit(int x) {
+/*
+** x_bigger_than_lower_bound: x >= lower_bound
+** x_smaller_than_upper_bound: upper_bound >= x
+** principle:
+** 1. a - b = a + (~b + 1)
+** 2. (msb of a) => (a >> 31) so, if (a < 0) then (msb = 1) else (msb = 0)
+*/
   const int lower_bound = 0x30;
   const int upper_bound = 0x39;
-
-  return 2;
+  const int x_bigger_than_lower_bound = !((x + (~lower_bound + 1)) >> 31);
+  const int x_smaller_than_upper_bound = !((upper_bound + (~x + 1)) >> 31);
+  return x_bigger_than_lower_bound & x_smaller_than_upper_bound;
 }
 /* 
  * conditional - same as x ? y : z 
@@ -240,7 +251,13 @@ int isAsciiDigit(int x) {
  *   Rating: 3
  */
 int conditional(int x, int y, int z) {
-  return 2;
+/*
+** binarized_x: all bits are negative if x == 0 else (all bits are positive)
+** if all bits of the x are positive then x & operand = operand
+*/
+  const int binarized_x = ~(!!x) + 1;
+  
+  return (binarized_x & y) | (~binarized_x & z);
 }
 /* 
  * isLessOrEqual - if x <= y  then return 1, else return 0 
@@ -250,7 +267,20 @@ int conditional(int x, int y, int z) {
  *   Rating: 3
  */
 int isLessOrEqual(int x, int y) {
-  return 2;
+/*
+** x   y   rst
+** +   +   x - y
+** +   -   flase 
+** -   +   true
+** -   -   x - y overflow...
+*/
+  const int diff_msb  = (x >> 31) ^ (y >> 31);
+  const int binarized_diff_msb = ~(!! diff_msb) + 1;
+  const int positivity_y = !(x >> 31);
+  const int positivity_gap = !!(x + (~y + 1));
+  printf("%d %d %d\n", x, y, binarized_diff_msb);
+  
+  return (binarized_diff_msb & positivity_y) | (binarized_diff_msb & positivity_gap);
 }
 //4
 /* 
