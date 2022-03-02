@@ -320,7 +320,53 @@ int logicalNeg(int x) {
  *  Rating: 4
  */
 int howManyBits(int x) {
-  return 0;
+  int bitmask= ~!!(x >> 31) + 1;
+  int positive_x = x ^ bitmask;
+  int cnt = !!(positive_x ^ 0);
+  int binarized_bit = 0;
+  int exist_upper_bit = 0;
+  int i = 0;
+
+  //help for cut the lower bound
+  bitmask = ~(1 << 31);
+
+  //Binary search
+  i = 16;
+  bitmask = bitmask >> 15;
+  exist_upper_bit = !!(positive_x >> i);
+  cnt = cnt + (exist_upper_bit << 4);
+  binarized_bit = ~exist_upper_bit+1;
+  positive_x = (binarized_bit & (positive_x >> i)) | (~binarized_bit & positive_x & bitmask);
+  
+  i = 8;
+  bitmask = bitmask >> i;
+  exist_upper_bit = !!(positive_x >> i);
+  cnt = cnt + (exist_upper_bit << 3);
+  binarized_bit = ~exist_upper_bit+1;
+  positive_x = (binarized_bit & (positive_x >> i)) | (~binarized_bit & positive_x & bitmask);
+
+  i = 4;
+  bitmask = bitmask >> i;
+  exist_upper_bit = !!(positive_x >> i);
+  cnt = cnt + (exist_upper_bit << 2);
+  binarized_bit = ~exist_upper_bit+1;
+  positive_x = (binarized_bit & (positive_x >> i)) | (~binarized_bit & positive_x & bitmask);
+
+  i = 2;
+  bitmask = bitmask >> i;
+  exist_upper_bit = !!(positive_x >> i);
+  cnt = cnt + (exist_upper_bit << 1);
+  binarized_bit = ~exist_upper_bit+1;
+  positive_x = (binarized_bit & (positive_x >> i)) | (~binarized_bit & positive_x & bitmask);
+
+  i = 1;
+  bitmask = bitmask >> i;
+  exist_upper_bit = !!(positive_x >> i);
+  cnt = cnt + exist_upper_bit;
+  binarized_bit = ~exist_upper_bit+1;
+  positive_x = (binarized_bit & (positive_x >> i)) | (~binarized_bit & positive_x & bitmask);
+
+  return cnt+1;
 }
 //float
 /* 
