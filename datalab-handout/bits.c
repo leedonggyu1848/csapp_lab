@@ -322,6 +322,8 @@ int logicalNeg(int x) {
 int howManyBits(int x) {
   int bitmask= ~!!(x >> 31) + 1;
   int positive_x = x ^ bitmask;
+  //zero and -1 don't have msb
+  //so, if x is -1 or zero cnt plus one
   int cnt = !!(positive_x ^ 0);
   int binarized_bit = 0;
   int exist_upper_bit = 0;
