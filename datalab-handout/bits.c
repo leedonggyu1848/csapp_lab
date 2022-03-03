@@ -382,8 +382,25 @@ int howManyBits(int x) {
  *   Max ops: 30
  *   Rating: 4
  */
-unsigned floatScale2(unsigned uf) {
-  return 2;
+unsigned floatScale2(unsigned uf) {\
+  const unsigned s_bitmask = 0x80000000u;
+  const unsigned exp_bitmask = 0x7f800000u;
+  const unsigned exp_alpha = 0x00800000u;
+  const unsigned frac_bitmask = 0x007fffffu;
+
+  unsigned s = uf & s_bitmask;
+  unsigned exp = uf & exp_bitmask;
+  unsigned frac = uf & frac_bitmask;
+
+  //special values
+  if (!(exp ^ exp_bitmask)) return uf;
+
+  //denormalized values
+  if (!exp)
+    return s | exp | (frac << 1);
+
+  //normal values
+  return s | (exp + exp_alpha) | frac;
 }
 /* 
  * floatFloat2Int - Return bit-level equivalent of expression (int) f
@@ -398,7 +415,35 @@ unsigned floatScale2(unsigned uf) {
  *   Rating: 4
  */
 int floatFloat2Int(unsigned uf) {
-  return 2;
+  const unsigned s_bitmask = 0x80000000u;
+  const unsigned exp_bitmask = 0x7f800000u;
+  const unsigned special_values = 0x80000000u;
+  
+  int pow_2_E = 0;
+  int i = 0;
+
+  unsigned s = uf & s_bitmask;
+  unsigned exp = uf & exp_bitmask;
+
+  //special values
+  if (!(exp ^ exp_bitmask)) return special_values;
+
+  //denormalized vlaues
+  if (!exp)
+    return 0;
+
+  //normal vlaues
+  pow_2_E = 1;
+  i = (exp >> 23) - 127;
+  if (i < 0)
+    return 0;
+  if (i > 31)
+    return special_values;
+
+  while (i-- > 0)
+    pow_2_E = pow_2_E << 2;
+  s = s ? -1 : 1;
+  return s * pow_2_E;
 }
 /* 
  * floatPower2 - Return bit-level equivalent of the expression 2.0^x
@@ -414,5 +459,14 @@ int floatFloat2Int(unsigned uf) {
  *   Rating: 4
  */
 unsigned floatPower2(int x) {
-    return 2;
+  const int positive_INF = 0x7f800000u;
+  const int negative_INF = 0;
+  const unsigned exp = (x + 127) << 23;
+
+  if (x < -126)
+    return negative_INF;
+  if (x > 128)
+    return positive_INF;
+  
+  return exp ;
 }
