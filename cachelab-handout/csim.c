@@ -56,6 +56,8 @@ void csim_getopt(int argc, char *argv[], csim_opt_t *dest){
     }
 }
 
+/* simulate code */
+
 int next_command(csim_command_t *command, FILE *fd);
 void process_command(csim_command_t *command, int **cache, csim_rst_t *rst);
 
@@ -63,6 +65,18 @@ void simulate(const csim_opt_t *opts, csim_rst_t *rst) {
     csim_command_t command = {0, };
     int **cache = NULL;
 
+    /* TODO: malloc to cache*/
+
     while (-1 != next_command(&command, opts->tracefile))
         process_command(&opts, cache, &rst);
+}
+
+int next_command(csim_command_t *command, FILE *fd) {
+    /* TODO */
+    return -1;
+}
+
+void process_command(csim_command_t *command, int **cache, csim_rst_t *rst) {
+    /* TODO */
+   return ; 
 }
