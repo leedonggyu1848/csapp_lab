@@ -13,10 +13,8 @@ typedef struct csim_rst {
     int hits, misses, evicts;
 } csim_rst_t;
 
-typedef enum csim_operation { I=0, L, S, M } csim_operation_e;
-
 typedef struct csim_command {
-    csim_operation_e operation;
+    int num_access;
     uint64_t addr;
     unsigned int size;
 } csim_command_t;
@@ -68,7 +66,7 @@ void simulate(const csim_opt_t *opts, csim_rst_t *rst) {
     /* TODO: malloc to cache*/
 
     while (-1 != next_command(&command, opts->tracefile))
-        process_command(&opts, cache, &rst);
+        process_command(&command, cache, rst);
 }
 
 int next_command(csim_command_t *command, FILE *fd) {
