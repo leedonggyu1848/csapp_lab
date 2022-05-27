@@ -38,7 +38,7 @@ typedef struct csim_line {
 
 void csim_getopt(int argc, char *argv[], csim_opt_t *dest);
 void simulate(const csim_opt_t *opts, csim_rst_t *rst);
-void update_opt_to_mask(csim_opt_t *opt);
+void update_mask_in_opt(csim_opt_t *opt);
 m_addr make_mask(int size, int offset);
 m_addr extract_bit(m_addr addr, m_addr mask, int offset);
 
@@ -47,7 +47,7 @@ int main(int argc, char *argv[]){
     csim_rst_t rst = {0, };
 
     csim_getopt(argc, argv, &opt);
-    update_opt_to_mask(&opt);
+    update_mask_in_opt(&opt);
     simulate(&opt, &rst);
     printSummary(rst.hits, rst.misses, rst.evicts);
 
@@ -79,7 +79,7 @@ void csim_getopt(int argc, char *argv[], csim_opt_t *dest){
     dest->t = MBIT - (dest->s + dest->b);
 }
 
-void update_opt_to_mask(csim_opt_t *opt){
+void update_mask_in_opt(csim_opt_t *opt){
     opt->tag_mask = make_mask(opt->t, opt->s + opt->b);
     opt->index_mask = make_mask(opt->s, opt->b);
     opt->offset_mask = make_mask(opt->b, 0);
@@ -166,7 +166,7 @@ void process_command(csim_command_t *command, csim_line_t **cache, csim_rst_t *r
             empty_index = i; 
         }
     }
-    
+
     if (empty_index != -1) {
         lines[empty_index].tag = command->tag;
         lines[empty_index].valid = 1;
